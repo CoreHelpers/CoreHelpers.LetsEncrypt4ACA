@@ -1,0 +1,29 @@
+name: Build and Publish Container
+
+on:
+  push:
+    branches: [ "main" ]
+    
+  workflow_dispatch:
+
+env:
+  TAG_NAME: ${{ github.run_id }}
+  
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checking out repository
+        uses: actions/checkout@v3    
+        
+      - name: Log into docker hub
+        uses: docker/login-action@v2.1.0
+        with:      
+          username: ${{ secrets.DOCKER_ACCOUNT }}
+          password: ${{ secrets.DOCKER_TOKEN }}        
+          
+      - name: Build & Push container 
+        uses: docker/build-push-action@v3.2.0
+        with:
+          push: true
+          tags: corehelpers/letsencrypt4aca:${{ env.TAG_NAME }}
