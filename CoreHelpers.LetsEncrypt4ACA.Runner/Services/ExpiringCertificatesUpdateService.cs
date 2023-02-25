@@ -51,7 +51,7 @@ namespace CoreHelpers.LetsEncrypt4ACA.Runner.Services
                 Console.WriteLine($"Renewing certificate {expiringCertificate.Data.Name} for domain {domain}");
                 var domainUpdateService = new DomainUpdateService(_tenantId, _clientId, _clientSecret, _subscriptionId, _containerAppRg, _containerAppEnvironment, domain, _accountName, _dn, _acmeEnvironment);
 
-                // exceute the ipdate
+                // exceute the update
                 await domainUpdateService.PerformUpdate();                
             }
         }

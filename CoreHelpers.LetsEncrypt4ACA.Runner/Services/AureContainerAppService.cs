@@ -79,8 +79,10 @@ namespace Cert.Services
             }
         }
 
-        public async Task UpdateCustomDomains(string targetDomain, ContainerAppManagedEnvironmentCertificateResource certificateResource)
+        public async Task<IEnumerable<ResourceIdentifier>> UpdateCustomDomains(string targetDomain, ContainerAppManagedEnvironmentCertificateResource certificateResource)
         {
+            var result = new List<ResourceIdentifier>();
+
             // build the arm client
             var client = new ArmClient(_tokenCredential);
             {
@@ -96,6 +98,11 @@ namespace Cert.Services
 
                     foreach(var customDomain in ingress.CustomDomains.Where(d => d.Name.Equals(targetDomain)))
                     {
+                        // remember that we replaced this certificate
+                        if (!result.Contains(customDomain.CertificateId))
+                            result.Add(customDomain.CertificateId);
+
+                        // update
                         customDomain.CertificateId = certificateResource.Id;
                         customDomain.BindingType = ContainerAppCustomDomainBindingType.SniEnabled;                        
                     }
@@ -110,6 +117,26 @@ namespace Cert.Services
 
                     await containerApp.UpdateAsync(WaitUntil.Completed, newContainerAppData);
                 }               
+            }
+
+            // done
+            return result;
+        }
+
+        public async Task DeleteReplacedCertificates(IEnumerable<ResourceIdentifier> replacedCertificates)
+        {
+            // build the arm client
+            var client = new ArmClient(_tokenCredential);
+            {
+                // lookup the managed environment
+                var managedEnvironment = await client.GetContainerAppManagedEnvironmentResource(_managedEnvironmentResourceId).GetAsync();
+
+                foreach(var replacedCertificate in replacedCertificates)
+                {
+                    Console.WriteLine($"Deleting certificate {replacedCertificate.Name}");
+                    var certificateResource = await managedEnvironment.Value.GetContainerAppManagedEnvironmentCertificateAsync(replacedCertificate.Name);
+                    await certificateResource.Value.DeleteAsync(WaitUntil.Completed);
+                }                
             }
         }
     }

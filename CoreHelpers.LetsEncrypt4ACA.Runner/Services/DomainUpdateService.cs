@@ -101,7 +101,10 @@ namespace CoreHelpers.LetsEncrypt4ACA.Runner.Services
 
             // update the container app custom domains
             Console.WriteLine("Updating the custom domains in the container apps");
-            await containerAppService.UpdateCustomDomains(_targetDomain, certificateResource);
+            var replacedCertificates = await containerAppService.UpdateCustomDomains(_targetDomain, certificateResource);
+
+            Console.WriteLine($"Removing #{replacedCertificates.Count()} replaced certificates");
+            await containerAppService.DeleteReplacedCertificates(replacedCertificates);
         }
 	}
 }
