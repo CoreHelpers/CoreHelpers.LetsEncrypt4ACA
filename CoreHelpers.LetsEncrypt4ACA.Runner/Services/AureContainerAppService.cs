@@ -71,8 +71,13 @@ namespace Cert.Services
                 appCertificate.Properties.Password = password;
                 appCertificate.Properties.Value = certificateData;
 
+                // define a unique certificate name
+                var certificateName = $"{targetDomain}-{Guid.NewGuid()}".Replace("-","");
+                if (certificateName.Length > 61)
+                    certificateName = certificateName.Substring(0, 61);
+
                 // upload the certificate (this call is replacing the old one)
-                var resource = await managedEnvironment.Value.GetContainerAppManagedEnvironmentCertificates().CreateOrUpdateAsync(WaitUntil.Completed, $"{targetDomain}-{Guid.NewGuid()}", appCertificate);
+                var resource = await managedEnvironment.Value.GetContainerAppManagedEnvironmentCertificates().CreateOrUpdateAsync(WaitUntil.Completed, certificateName, appCertificate);
 
                 // doen
                 return resource.Value;
