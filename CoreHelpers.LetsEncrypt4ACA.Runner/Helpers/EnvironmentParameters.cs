@@ -16,8 +16,7 @@ namespace CoreHelpers.LetsEncrypt4ACA.Runner.Helpers
         public static string ACA_APPENV = "ACA_APPENV";
         public static string ACA_EXPIRING_DAYS = "ACA_EXPIRING_DAYS";
 
-        
-
+        public static string ACA_CREATE_FOR_DOMAIN = "ACA_CREATE_FOR_DOMAIN";
     }
 }
 

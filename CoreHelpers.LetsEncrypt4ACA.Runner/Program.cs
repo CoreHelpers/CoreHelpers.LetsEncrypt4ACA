@@ -21,12 +21,28 @@ var containerAppRg = EnvironmentHelpers.ValidateParameter(EnvironmentParameters.
 var containerAppEnvironment = EnvironmentHelpers.ValidateParameter(EnvironmentParameters.ACA_APPENV);
 var optionalExpiringDays = Convert.ToInt32(EnvironmentHelpers.ReadOptionalParameter(EnvironmentParameters.ACA_EXPIRING_DAYS, "30"));
 
-// Optional parameters 
-// get the update service
-Console.WriteLine("Initializing the expiring certificaes update service");
-var expiringCertificatesUpdateService = new ExpiringCertificatesUpdateService(tenantId, clientId, clientSecret, subscriptionId, containerAppRg, containerAppEnvironment, accountName, certificateDn, optionalExpiringDays, optionalLetsEncryptEnvironment);
+// check if we need to create a certificate
+var optionalCreateDomain = EnvironmentHelpers.ReadOptionalParameter(EnvironmentParameters.ACA_CREATE_FOR_DOMAIN, "");
 
-// execute the update
-Console.WriteLine("Performing Certificate updates");
-await expiringCertificatesUpdateService.PerformUpdate();
+// execute the operation
+if (!String.IsNullOrEmpty(optionalCreateDomain))
+{  
+    // get the update service
+    Console.WriteLine("Initializing the certificate creation service");
+    var certificateCreationService = new CertificateInitializingService(tenantId, clientId, clientSecret, subscriptionId, containerAppRg, containerAppEnvironment, accountName, certificateDn, optionalExpiringDays, optionalLetsEncryptEnvironment);
+
+    // execute the update
+    Console.WriteLine("Performing Certificate creation");
+    await certificateCreationService.PerformCreation(optionalCreateDomain);
+}
+else
+{
+    // get the update service
+    Console.WriteLine("Initializing the expiring certificaes update service");
+    var expiringCertificatesUpdateService = new ExpiringCertificatesUpdateService(tenantId, clientId, clientSecret, subscriptionId, containerAppRg, containerAppEnvironment, accountName, certificateDn, optionalExpiringDays, optionalLetsEncryptEnvironment);
+
+    // execute the update
+    Console.WriteLine("Performing Certificate updates");
+    await expiringCertificatesUpdateService.PerformUpdate();
+}
 

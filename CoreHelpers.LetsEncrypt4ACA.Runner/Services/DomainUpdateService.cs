@@ -31,7 +31,7 @@ namespace CoreHelpers.LetsEncrypt4ACA.Runner.Services
             _dn = dn;
 		}
 
-		public async Task PerformUpdate()
+		public async Task PerformUpdate(bool deleteReplacedCertificate = true)
 		{
             // get the containerApp Service
             var containerAppService = new AureContainerAppService(_tenantId, _clientId, _clientSecret, _subscriptionId, _containerAppRg, _containerAppEnvironment);
@@ -103,8 +103,11 @@ namespace CoreHelpers.LetsEncrypt4ACA.Runner.Services
             Console.WriteLine("Updating the custom domains in the container apps");
             var replacedCertificates = await containerAppService.UpdateCustomDomains(_targetDomain, certificateResource);
 
-            Console.WriteLine($"Removing #{replacedCertificates.Count()} replaced certificates");
-            await containerAppService.DeleteReplacedCertificates(replacedCertificates);
+            if (deleteReplacedCertificate)
+            {
+                Console.WriteLine($"Removing #{replacedCertificates.Count()} replaced certificates");
+                await containerAppService.DeleteReplacedCertificates(replacedCertificates);
+            }
         }
 	}
 }
